@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -9,6 +10,10 @@ namespace NuSign
     class Program
     {
         static string _nupkgFileName = "Pkcs11Interop.3.2.0.nupkg";
+
+        static string _fileListPath = "package/signatures/sha256sums.txt";
+
+        static string _fileListSignaturePath = "package/signatures/sha256sums.p7s";
 
         /*
 $ find . -type f | grep -v sha256sums.txt | xargs sha256sum > sha256sums.txt
@@ -40,11 +45,65 @@ e3697bed3d9c1bd092fd3e1968a17631560921eb5d4a5fa26ddd6785085cd69a  ./lib/sl5/Pkcs
             if (!System.IO.File.Exists(_nupkgFileName))
                 throw new Exception();
 
-            StringBuilder stringBuilder = new StringBuilder();
+            SignPackage(_nupkgFileName);
 
-            using (Ionic.Zip.ZipFile zipFile = new Ionic.Zip.ZipFile(_nupkgFileName))
+            VerifyPackage(_nupkgFileName);
+        }
+
+        static void VerifyPackage(string path)
+        {
+            using (Ionic.Zip.ZipFile zipFile = new Ionic.Zip.ZipFile(path))
             {
-                foreach (Ionic.Zip.ZipEntry zipEntry in zipFile.Entries)
+                StringBuilder stringBuilder = new StringBuilder();
+
+                if (!zipFile.ContainsEntry(_fileListPath) || !zipFile.ContainsEntry(_fileListSignaturePath))
+                    throw new Exception("Package is not signed");
+
+                byte[] fileList = null;
+                byte[] fileListSignature = null;
+
+                foreach (Ionic.Zip.ZipEntry zipEntry in zipFile.EntriesSorted)
+                {
+                    if (zipEntry.IsDirectory)
+                        continue;
+
+                    if (zipEntry.FileName == _fileListPath)
+                    {
+                        fileList = ReadZipEntryContent(zipEntry);
+                        continue;
+                    }
+                        
+                    if (zipEntry.FileName == _fileListSignaturePath)
+                    {
+                        fileListSignature = ReadZipEntryContent(zipEntry);
+                        continue;
+                    }
+
+                    string fileName = zipEntry.FileName;
+                    string fileHash = ComputeHash(zipEntry);
+
+                    stringBuilder.AppendLine(fileHash + " " + fileName);
+                }
+
+                byte[] currentFileList = Encoding.UTF8.GetBytes(stringBuilder.ToString());
+
+                if (!currentFileList.SequenceEqual(fileList))
+                    throw new Exception("Package content has been altered");
+
+                VerifyDetachedCmsSignature(fileList, fileListSignature);
+            }
+        }
+
+        static void SignPackage(string path)
+        {
+            using (Ionic.Zip.ZipFile zipFile = new Ionic.Zip.ZipFile(path))
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+
+                if (zipFile.ContainsEntry(_fileListPath) || zipFile.ContainsEntry(_fileListSignaturePath))
+                    throw new Exception("Package is already signed");
+
+                foreach (Ionic.Zip.ZipEntry zipEntry in zipFile.EntriesSorted)
                 {
                     if (zipEntry.IsDirectory)
                         continue;
@@ -55,11 +114,11 @@ e3697bed3d9c1bd092fd3e1968a17631560921eb5d4a5fa26ddd6785085cd69a  ./lib/sl5/Pkcs
                     stringBuilder.AppendLine(fileHash + " " + fileName);
                 }
 
-                byte[] data = Encoding.UTF8.GetBytes(stringBuilder.ToString());
-                byte[] signature = SignData(data);
+                byte[] fileList = Encoding.UTF8.GetBytes(stringBuilder.ToString());
+                byte[] fileListSignature = SignData(fileList);
 
-                zipFile.AddEntry("package/signature/sha256sums.txt", data);
-                zipFile.AddEntry("package/signature/sha256sums.p7s", signature);
+                zipFile.AddEntry(_fileListPath, fileList);
+                zipFile.AddEntry(_fileListSignaturePath, fileListSignature);
 
                 zipFile.Save();
             }
@@ -90,6 +149,16 @@ e3697bed3d9c1bd092fd3e1968a17631560921eb5d4a5fa26ddd6785085cd69a  ./lib/sl5/Pkcs
             }
         }
 
+        static byte[] ReadZipEntryContent(Ionic.Zip.ZipEntry entry)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                entry.Extract(ms);
+                ms.Position = 0;
+                return ms.ToArray();
+            }
+        }
+
         static byte[] SignData(byte[] data)
         {
             X509Certificate2 signingCertificate = GetSigningCertificate();
@@ -104,10 +173,8 @@ e3697bed3d9c1bd092fd3e1968a17631560921eb5d4a5fa26ddd6785085cd69a  ./lib/sl5/Pkcs
             try
             {
                 X509Certificate2Collection certs = X509Certificate2UI.SelectFromCollection(store.Certificates, null, null, X509SelectionFlag.SingleSelection);
-
                 if (certs != null && certs.Count > 0)
-                    foreach (X509Certificate2 cert in certs)
-                        return cert;
+                    return certs[0];
             }
             finally
             {
@@ -125,10 +192,8 @@ e3697bed3d9c1bd092fd3e1968a17631560921eb5d4a5fa26ddd6785085cd69a  ./lib/sl5/Pkcs
             try
             {
                 X509Certificate2Collection certs = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, true);
-
                 if (certs != null && certs.Count > 0)
-                    foreach (X509Certificate2 cert in certs)
-                        return cert;
+                    return certs[0];
             }
             finally
             {
@@ -142,9 +207,18 @@ e3697bed3d9c1bd092fd3e1968a17631560921eb5d4a5fa26ddd6785085cd69a  ./lib/sl5/Pkcs
         {
             CmsSigner cmsSigner = new CmsSigner(signerCert);
             ContentInfo contentInfo = new ContentInfo(data);
-            SignedCms cms = new SignedCms(contentInfo, false);
+            SignedCms cms = new SignedCms(contentInfo, true);
             cms.ComputeSignature(cmsSigner, false);
+            
             return cms.Encode();
+        }
+
+        static void VerifyDetachedCmsSignature(byte[] data, byte[] signature)
+        {
+            ContentInfo contentInfo = new ContentInfo(data);
+            SignedCms cms = new SignedCms(contentInfo, true);
+            cms.Decode(signature);
+            cms.CheckSignature(true);
         }
     }
 }
