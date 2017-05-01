@@ -46,6 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IntegrityEntry.cs" />
+    <Compile Include="IntegrityList.cs" />
+    <Compile Include="PackageAlreadySignedException.cs" />
+    <Compile Include="CryptoUtils.cs" />
+    <Compile Include="NuGetPackage.cs" />
+    <Compile Include="PackageNotSignedException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
