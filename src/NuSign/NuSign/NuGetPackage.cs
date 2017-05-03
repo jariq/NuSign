@@ -45,7 +45,7 @@ namespace NuSign
             if (this.IsSigned)
                 throw new PackageAlreadySignedException();
 
-            IntegrityList integrityList = this.ComputeIntegrityList();
+            IntegrityList integrityList = this.ComputeIntegrityList(out _, out _);
 
             byte[] integrityListContent = integrityList.ToByteArray();
             byte[] integrityListSignature = CryptoUtils.CreateDetachedCmsSignature(integrityListContent);
@@ -61,14 +61,11 @@ namespace NuSign
             if (!this.IsSigned)
                 throw new PackageNotSignedException();
 
-            IntegrityList computedIntegrityList = this.ComputeIntegrityList();
-            IntegrityList embeddedIntegrityList = this.ReadIntegrityList();
+            IntegrityList computedIntegrityList = this.ComputeIntegrityList(out byte[] integrityListContent, out byte[] integrityListSignatureContent);
+            IntegrityList embeddedIntegrityList = IntegrityList.FromByteArray(integrityListContent);
 
             if (!computedIntegrityList.SequenceEqual(embeddedIntegrityList))
                 throw new Exception("Package content has been altered");
-
-            byte[] integrityListContent = GetIntegrityListContent();
-            byte[] integrityListSignatureContent = GetIntegrityListSignatureContent();
 
             CryptoUtils.VerifyDetachedCmsSignature(integrityListContent, integrityListSignatureContent);
         }
@@ -77,16 +74,31 @@ namespace NuSign
 
         #region Private methods
 
-        private IntegrityList ComputeIntegrityList()
+        private IntegrityList ComputeIntegrityList(out byte[] integrityListContent, out byte[] integrityListSignatureContent)
         {
-            // TODO - Optimize Verify() by outputing byte[] integrityListContent and byte[] integrityListSignatureContent here
+            byte[] integrityListContentLocal = null;
+            byte[] integrityListSignatureContentLocal = null;
 
             IntegrityList integrityList = new IntegrityList();
 
             foreach (ZipEntry zipEntry in _zipFile.EntriesSorted)
             {
-                if (zipEntry.IsDirectory || IsIntegrityList(zipEntry) || IsIntegrityListSignature(zipEntry))
+                if (zipEntry.IsDirectory)
+                {
                     continue;
+                }
+
+                if (IsIntegrityList(zipEntry))
+                {
+                    integrityListContentLocal = ReadZipEntryContent(zipEntry);
+                    continue;
+                }
+
+                if (IsIntegrityListSignature(zipEntry))
+                {
+                    integrityListSignatureContentLocal = ReadZipEntryContent(zipEntry);
+                    continue;
+                }
 
                 IntegrityEntry integrityEntry = new IntegrityEntry()
                 {
@@ -98,41 +110,9 @@ namespace NuSign
                 integrityList.Add(integrityEntry);
             }
 
+            integrityListContent = integrityListContentLocal;
+            integrityListSignatureContent = integrityListSignatureContentLocal;
             return integrityList;
-        }
-
-        private IntegrityList ReadIntegrityList()
-        {
-            byte[] integrityListContent = GetIntegrityListContent();
-            return IntegrityList.FromByteArray(integrityListContent);
-        }
-
-        private byte[] GetIntegrityListContent()
-        {
-            foreach (ZipEntry zipEntry in _zipFile.EntriesSorted)
-            {
-                if (zipEntry.IsDirectory)
-                    continue;
-
-                if (IsIntegrityList(zipEntry))
-                    return ReadZipEntryContent(zipEntry);
-            }
-
-            return null;
-        }
-
-        private byte[] GetIntegrityListSignatureContent()
-        {
-            foreach (ZipEntry zipEntry in _zipFile.EntriesSorted)
-            {
-                if (zipEntry.IsDirectory)
-                    continue;
-
-                if (IsIntegrityListSignature(zipEntry))
-                    return ReadZipEntryContent(zipEntry);
-            }
-
-            return null;
         }
 
         #endregion
