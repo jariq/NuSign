@@ -2,6 +2,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
+using System.Security.Cryptography.X509Certificates;
 
 namespace NuSign
 {
@@ -43,7 +45,7 @@ namespace NuSign
         public void Sign()
         {
             if (this.IsSigned)
-                throw new PackageAlreadySignedException();
+                throw new Exception("Package is already signed");
 
             IntegrityList integrityList = this.ComputeIntegrityList(out _, out _);
 
@@ -56,10 +58,10 @@ namespace NuSign
             _zipFile.Save();
         }
 
-        public void Verify()
+        public X509Certificate2 Verify()
         {
             if (!this.IsSigned)
-                throw new PackageNotSignedException();
+                throw new Exception("Package is not signed");
 
             IntegrityList computedIntegrityList = this.ComputeIntegrityList(out byte[] integrityListContent, out byte[] integrityListSignatureContent);
             IntegrityList embeddedIntegrityList = IntegrityList.FromByteArray(integrityListContent);
@@ -67,7 +69,8 @@ namespace NuSign
             if (!computedIntegrityList.SequenceEqual(embeddedIntegrityList))
                 throw new Exception("Package content has been altered");
 
-            CryptoUtils.VerifyDetachedCmsSignature(integrityListContent, integrityListSignatureContent);
+            SignerInfo signerInfo = CryptoUtils.VerifyDetachedCmsSignature(integrityListContent, integrityListSignatureContent);
+            return signerInfo.Certificate;
         }
 
         #endregion
