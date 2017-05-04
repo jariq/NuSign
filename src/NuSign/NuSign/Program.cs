@@ -1,26 +1,74 @@
-﻿using System;
+﻿using Mono.Options;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 
 namespace NuSign
 {
     class Program
     {
+        static string AssemblyName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
+
         static void Main(string[] args)
         {
-            string path = "Pkcs11Interop.3.2.0.nupkg";
+            bool argHelp = false;
+            string argSign = null;
+            string argVerify = null;
+            string argCert = null;
+            List<string> argExtras = null;
 
-            // nusign.exe -sign [-cert thumbprint] Pkcs11Interop.3.2.0.nupkg
+            var options = new OptionSet {
+                $"{AssemblyName} - NuGet package signing prototype",
+                "",
+                "Example usage:",
+                "",
+                $"  {AssemblyName} -help",
+                $"  {AssemblyName} -sign Example.nupkg",
+                $"  {AssemblyName} -sign Example.nupkg -cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb",
+                $"  {AssemblyName} -verify Example.nupkg",
+                "",
+                "Available options:",
+                "",
+                { "h|help", "Show help", h => argHelp = (h != null) },
+                { "s|sign=", "Sign specified package", s => argSign = s },
+                { "v|verify=", "Verify signature of specified package", v => argVerify = v },
+                { "c|cert=", "Thumbprint of the signing certificate located in CurrentUser\\My certificate store", c => argCert = c },
+                ""
+            };
+            
+            try
+            {
+                argExtras = options.Parse(args);
+            }
+            catch (OptionException e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine($"Try '{AssemblyName} -help' for more information.");
+                return;
+            }
 
-            // nusign.exe -verify Pkcs11Interop.3.2.0.nupkg
+            if (argHelp || (argExtras != null && argExtras.Count > 0))
+            {
+                options.WriteOptionDescriptions(Console.Out);
+                return;
+            }
 
-            using (NuGetPackage pkg = new NuGetPackage(path))
-                pkg.Sign();
+            if (!string.IsNullOrEmpty(argSign))
+            {
+                using (NuGetPackage package = new NuGetPackage(argSign))
+                    package.Sign(); // TODO - use argCert
+            }
 
-            X509Certificate2 signerCert = null;
-            using (NuGetPackage pkg = new NuGetPackage(path))
-                signerCert = pkg.Verify();
+            if (!string.IsNullOrEmpty(argVerify))
+            {
+                X509Certificate2 signerCert = null;
+                using (NuGetPackage package = new NuGetPackage(argVerify))
+                    signerCert = package.Verify();
 
-            Console.WriteLine(signerCert.Subject);
+                Console.WriteLine(signerCert.Subject); // TODO - show in more friendly way
+            }
         }
     }
 }
