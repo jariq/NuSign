@@ -58,7 +58,7 @@ namespace NuSign
             if (!string.IsNullOrEmpty(argSign))
             {
                 using (NuGetPackage package = new NuGetPackage(argSign))
-                    package.Sign(); // TODO - use argCert
+                    package.Sign(argCert);
             }
 
             if (!string.IsNullOrEmpty(argVerify))

@@ -42,7 +42,7 @@ namespace NuSign
 
         #region Public methods
 
-        public void Sign()
+        public void Sign(string certThumbPrint)
         {
             if (this.IsSigned)
                 throw new Exception("Package is already signed");
@@ -50,7 +50,7 @@ namespace NuSign
             IntegrityList integrityList = this.ComputeIntegrityList(out _, out _);
 
             byte[] integrityListContent = integrityList.ToByteArray();
-            byte[] integrityListSignature = CryptoUtils.CreateDetachedCmsSignature(integrityListContent);
+            byte[] integrityListSignature = CryptoUtils.CreateDetachedCmsSignature(integrityListContent, certThumbPrint);
 
             _zipFile.AddEntry(_integrityListPath, integrityListContent);
             _zipFile.AddEntry(_integrityListSignaturePath, integrityListSignature);
