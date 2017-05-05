@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 
@@ -30,7 +31,16 @@ namespace NuSign
             ContentInfo contentInfo = new ContentInfo(data);
             SignedCms signedCms = new SignedCms(contentInfo, true);
             signedCms.Decode(signature);
-            signedCms.CheckSignature(true); // TODO - Verify also signing certificate
+
+            try
+            {
+                signedCms.CheckSignature(true); // TODO - Verify also signing certificate
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidSignatureException(ex);
+            }
+
             return signedCms.SignerInfos[0];
         }
 

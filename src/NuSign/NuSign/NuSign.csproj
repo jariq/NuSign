@@ -49,6 +49,7 @@
     <Compile Include="IntegrityEntry.cs" />
     <Compile Include="IntegrityList.cs" />
     <Compile Include="CryptoUtils.cs" />
+    <Compile Include="InvalidSignatureException.cs" />
     <Compile Include="NuGetPackage.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />

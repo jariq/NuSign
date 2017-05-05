@@ -42,9 +42,9 @@ namespace NuSign
             {
                 argExtras = options.Parse(args);
             }
-            catch (OptionException e)
+            catch (OptionException ex)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(ex.Message);
                 Console.WriteLine($"Try '{AssemblyName} -help' for more information.");
                 return;
             }
@@ -57,18 +57,61 @@ namespace NuSign
 
             if (!string.IsNullOrEmpty(argSign))
             {
-                using (NuGetPackage package = new NuGetPackage(argSign))
-                    package.Sign(argCert);
+                string fileName = Path.GetFileName(argSign);
+
+                Console.WriteLine($"Signing package \"{fileName}\"...");
+
+                try
+                {
+                    using (NuGetPackage package = new NuGetPackage(argSign))
+                        package.Sign(argCert);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unable to sign package: {ex.Message}");
+                    return;
+                }
+
+                Console.WriteLine($"Package \"{fileName}\" successfully signed.");
             }
+
+            Console.WriteLine();
 
             if (!string.IsNullOrEmpty(argVerify))
             {
-                X509Certificate2 signerCert = null;
-                using (NuGetPackage package = new NuGetPackage(argVerify))
-                    signerCert = package.Verify();
+                string fileName = Path.GetFileName(argVerify);
 
-                Console.WriteLine(signerCert.Subject); // TODO - show in more friendly way
+                Console.WriteLine($"Verifying the signature of package \"{fileName}\"...");
+
+                X509Certificate2 signerCert = null;
+
+                try
+                {
+                    using (NuGetPackage package = new NuGetPackage(argVerify))
+                        signerCert = package.Verify();
+                }
+                catch (InvalidSignatureException ex)
+                {
+                    Console.WriteLine(ex.InnerException == null ? $"{ex.Message}" : $"{ex.Message}: {ex.InnerException.Message}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unable to verify package: {ex.Message}");
+                    return;
+                }
+
+                Console.WriteLine($"Signature of \"{fileName}\" package is VALID.");
+                Console.WriteLine();
+                Console.WriteLine("Package was signed with the following certificate:");
+                Console.WriteLine($"  Issuer:         {signerCert.Issuer}");
+                Console.WriteLine($"  Subject:        {signerCert.Subject}");
+                Console.WriteLine($"  Serial number:  {signerCert.SerialNumber}");
+                Console.WriteLine($"  Invalid before: {signerCert.NotBefore.ToString("R")}");
+                Console.WriteLine($"  Invalid after:  {signerCert.NotAfter.ToString("R")}");
             }
+
+            Console.WriteLine();
         }
     }
 }
