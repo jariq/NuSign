@@ -17,6 +17,7 @@ namespace NuSign
             string argSign = null;
             string argVerify = null;
             string argCert = null;
+            bool argCertValidation = false;
             List<string> argExtras = null;
 
             var options = new OptionSet {
@@ -28,6 +29,7 @@ namespace NuSign
                 $"  {AssemblyName} -sign Example.nupkg",
                 $"  {AssemblyName} -sign Example.nupkg -cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb",
                 $"  {AssemblyName} -verify Example.nupkg",
+                $"  {AssemblyName} -verify Example.nupkg -performCertValidation",
                 "",
                 "Available options:",
                 "",
@@ -35,6 +37,7 @@ namespace NuSign
                 { "s|sign=", "Sign specified package", s => argSign = s },
                 { "v|verify=", "Verify signature of specified package", v => argVerify = v },
                 { "c|cert=", "Thumbprint of the signing certificate located in CurrentUser\\My certificate store", c => argCert = c },
+                { "p|performCertValidation", "Perform also validation of signer's certificate", p => argCertValidation = (p != null) },
                 ""
             };
             
@@ -81,14 +84,17 @@ namespace NuSign
             {
                 string fileName = Path.GetFileName(argVerify);
 
-                Console.WriteLine($"Verifying the signature of package \"{fileName}\"...");
+                if (argCertValidation)
+                    Console.WriteLine($"Verifying the signature of package \"{fileName}\"...");
+                else
+                    Console.WriteLine($"Verifying the signature of package \"{fileName}\" without the validation of signer's certificate...");
 
                 X509Certificate2 signerCert = null;
 
                 try
                 {
                     using (NuGetPackage package = new NuGetPackage(argVerify))
-                        signerCert = package.Verify();
+                        signerCert = package.Verify(argCertValidation);
                 }
                 catch (InvalidSignatureException ex)
                 {
