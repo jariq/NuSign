@@ -14,7 +14,7 @@ namespace NuSign
             return sha256.Hash;
         }
 
-        public static byte[] CreateDetachedCmsSignature(byte[] data, string certThumbPrint)
+        public static X509Certificate2 CreateDetachedCmsSignature(byte[] data, string certThumbPrint, out byte[] signature)
         {
             X509Certificate2 signingCertificate = GetSigningCertificate(certThumbPrint);
             CmsSigner cmsSigner = new CmsSigner(signingCertificate);
@@ -23,7 +23,8 @@ namespace NuSign
             SignedCms signedCms = new SignedCms(contentInfo, true);
             signedCms.ComputeSignature(cmsSigner, false);
 
-            return signedCms.Encode();
+            signature = signedCms.Encode();
+            return signingCertificate;
         }
 
         public static SignerInfo VerifyDetachedCmsSignature(byte[] data, byte[] signature, bool performCertValidation)

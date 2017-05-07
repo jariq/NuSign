@@ -37,7 +37,7 @@ namespace NuSign
                 { "s|sign=", "Sign specified package", s => argSign = s },
                 { "v|verify=", "Verify signature of specified package", v => argVerify = v },
                 { "c|cert=", "Thumbprint of the signing certificate located in CurrentUser\\My certificate store", c => argCert = c },
-                { "p|performCertValidation", "Perform also validation of signer's certificate", p => argCertValidation = (p != null) },
+                { "p|performCertValidation", "Perform also validation of signing certificate", p => argCertValidation = (p != null) },
                 ""
             };
             
@@ -64,10 +64,12 @@ namespace NuSign
 
                 Console.WriteLine($"Signing package \"{fileName}\"...");
 
+                X509Certificate2 signingCert = null;
+
                 try
                 {
                     using (NuGetPackage package = new NuGetPackage(argSign))
-                        package.Sign(argCert);
+                        signingCert = package.Sign(argCert);
                 }
                 catch (Exception ex)
                 {
@@ -76,6 +78,8 @@ namespace NuSign
                 }
 
                 Console.WriteLine($"Package \"{fileName}\" successfully signed.");
+                Console.WriteLine();
+                PrintCertInfo(signingCert);
             }
 
             Console.WriteLine();
@@ -87,14 +91,14 @@ namespace NuSign
                 if (argCertValidation)
                     Console.WriteLine($"Verifying the signature of package \"{fileName}\"...");
                 else
-                    Console.WriteLine($"Verifying the signature of package \"{fileName}\" without the validation of signer's certificate...");
+                    Console.WriteLine($"Verifying the signature of package \"{fileName}\" without the validation of signing certificate...");
 
-                X509Certificate2 signerCert = null;
+                X509Certificate2 signingCert = null;
 
                 try
                 {
                     using (NuGetPackage package = new NuGetPackage(argVerify))
-                        signerCert = package.Verify(argCertValidation);
+                        signingCert = package.Verify(argCertValidation);
                 }
                 catch (InvalidSignatureException ex)
                 {
@@ -109,15 +113,20 @@ namespace NuSign
 
                 Console.WriteLine($"Signature of \"{fileName}\" package is VALID.");
                 Console.WriteLine();
-                Console.WriteLine("Package was signed with the following certificate:");
-                Console.WriteLine($"  Issuer:         {signerCert.Issuer}");
-                Console.WriteLine($"  Subject:        {signerCert.Subject}");
-                Console.WriteLine($"  Serial number:  {signerCert.SerialNumber}");
-                Console.WriteLine($"  Invalid before: {signerCert.NotBefore.ToString("R")}");
-                Console.WriteLine($"  Invalid after:  {signerCert.NotAfter.ToString("R")}");
+                PrintCertInfo(signingCert);
             }
 
             Console.WriteLine();
+        }
+
+        static void PrintCertInfo(X509Certificate2 cert)
+        {
+            Console.WriteLine("Package was signed with the following certificate:");
+            Console.WriteLine($"  Issuer:         {cert.Issuer}");
+            Console.WriteLine($"  Subject:        {cert.Subject}");
+            Console.WriteLine($"  Serial number:  {cert.SerialNumber}");
+            Console.WriteLine($"  Invalid before: {cert.NotBefore.ToString("R")}");
+            Console.WriteLine($"  Invalid after:  {cert.NotAfter.ToString("R")}");
         }
     }
 }
