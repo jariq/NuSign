@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <Description>NuGet package signing prototype - Unsigned package</Description>
+    <Company />
+    <Authors>Jaroslav Imrich</Authors>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/jariq/NuSign</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/jariq/NuSign/blob/master/LICENSE</PackageLicenseUrl>
+    <Copyright>Copyright 2017 Jaroslav Imrich</Copyright>
+  </PropertyGroup>
+
+</Project>
