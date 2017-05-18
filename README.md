@@ -6,7 +6,7 @@ NuSign
 
 NuSign is a command line application that digitally signs NuGet packages. It can also verify the signature of any previously signed NuGet package.
 
-**WARNING: NuSign SHOULD NOT be used in production!** It is just a prototype tool which demonstrates that NuGet packages can include embedded signatures and still remain backwards compatible with already existing NuGet tools.
+**WARNING: NuSign SHOULD NOT be used in production!** It is just a proof of the concept tool which demonstrates that NuGet packages can include embedded signatures and still remain backwards compatible with already existing NuGet tools.
 
 ## Why do NuGet packages need to be signed ?
 
@@ -26,17 +26,17 @@ Package signature created with [NuSign](https://github.com/jariq/NuSign) protect
 
 ## How do I sign a package ?
 
-Let's assume you have a valid code signing certificate present in your `CurrentUser\My` certificate store and you want to sign `MyPackage.1.0.0.nupkg`. You can initiate package signing with following command:
+Let's assume you have a valid code signing certificate present in your `CurrentUser\My` certificate store and you want to sign `MyLibrary.1.0.0.nupkg`. You can initiate package signing with following command:
 
-    c:\> NuSign.exe --sign MyPackage.1.0.0.nupkg
+    c:\> NuSign.exe --sign MyLibrary.1.0.0.nupkg
 
 NuSign will display GUI dialog which will let you select certificate you want to use for signing. If your signing certificate is stored in the smartcard then you might also be prompted to enter PIN code.
 
 Alternatively you can perform signing operation in non-interactive/headless mode by specifying thumbprint of signing certificate with `--cert` parameter:
 
-    c:\> NuSign.exe --sign MyPackage.1.0.0.nupkg --cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb
-    Signing package "MyPackage.1.0.0.nupkg"...
-    Package "MyPackage.1.0.0.nupkg" successfully signed.
+    c:\> NuSign.exe --sign MyLibrary.1.0.0.nupkg --cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb
+    Signing package "MyLibrary.1.0.0.nupkg"...
+    Package "MyLibrary.1.0.0.nupkg" successfully signed.
 
     Package was signed with the following certificate:
       Issuer:         CN=Certum Code Signing CA SHA2, OU=Certum Certification Authority, O=Unizeto Technologies S.A., C=PL
@@ -49,13 +49,13 @@ Alternatively you can perform signing operation in non-interactive/headless mode
 
 Basic validation of package signature can be performed with the following command:
 
-    c:\> NuSign.exe --verify MyPackage.1.0.0.nupkg
+    c:\> NuSign.exe --verify MyLibrary.1.0.0.nupkg
 
 If you want NuSign to perform also validation of signing certificate (whether it's been issued by the trusted CA and whether it hasn't been revoked) you will need to add `--performCertValidation` parameter:
 
-    c:\> NuSign.exe --verify MyPackage.1.0.0.nupkg --performCertValidation
+    c:\> NuSign.exe --verify MyLibrary.1.0.0.nupkg --performCertValidation
     Verifying the signature of package "NuSign.TestLibrary.Signed.1.0.0.nupkg"...
-    Signature of "MyPackage.1.0.0.nupkg" package is VALID.
+    Signature of "MyLibrary.1.0.0.nupkg" package is VALID.
 
     Package was signed with the following certificate:
       Issuer:         CN=Certum Code Signing CA SHA2, OU=Certum Certification Authority, O=Unizeto Technologies S.A., C=PL
@@ -64,9 +64,81 @@ If you want NuSign to perform also validation of signing certificate (whether it
       Invalid before: Wed, 11 Jan 2017 07:52:59 GMT
       Invalid after:  Thu, 11 Jan 2018 07:52:59 GMT
 
-## Where is package signature stored ?
+## How does the signing work ?
 
-**TODO - Add technical details**
+NuGet package (`.nupkg` file) is just an ordinary ZIP archive (`.zip` file) with the following directory structure:
+
+    MyLibrary.1.0.0.nupkg
+    ├── lib/
+    │   └── netstandard1.0/
+    │       └── MyLibrary.dll
+    ├── package/
+    │   └── services/
+    │       └── metadata/
+    │           └── core-properties/
+    │               └── 11faa6a592fc481090e9683c5b96d7bd.psmdcp
+    ├── _rels/
+    │   └── .rels
+    ├── [Content_Types].xml
+    └── MyLibrary.nuspec
+
+During the signing phase NuSign first creates file `package/signatures/IntegrityList.xml` which contains list of all files present in the package along with their cryptographic hashes:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<IntegrityList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <IntegrityEntry>
+    <FilePath>lib/netstandard1.0/MyLibrary.dll</FilePath>
+    <HashAlgorithm>http://www.w3.org/2000/09/xmldsig#sha256</HashAlgorithm>
+    <HashValue>xODa4SUb8nlwSCNVhQdbNcz7W69008nUtMPPsVkIr4U=</HashValue>
+  </IntegrityEntry>
+  <IntegrityEntry>
+    <FilePath>NMyLibrary.nuspec</FilePath>
+    <HashAlgorithm>http://www.w3.org/2000/09/xmldsig#sha256</HashAlgorithm>
+    <HashValue>qPH6r27f5UdmKOlQIG7NjSZ6y3/2GOG3E5CruBknuYc=</HashValue>
+  </IntegrityEntry>
+  <IntegrityEntry>
+    <FilePath>package/services/metadata/core-properties/11faa6a592fc481090e9683c5b96d7bd.psmdcp</FilePath>
+    <HashAlgorithm>http://www.w3.org/2000/09/xmldsig#sha256</HashAlgorithm>
+    <HashValue>NvSHHsSrJxMw1eGMqA1mbtxj06CFUF6bCmJh6Z4hd1I=</HashValue>
+  </IntegrityEntry>
+  <IntegrityEntry>
+    <FilePath>[Content_Types].xml</FilePath>
+    <HashAlgorithm>http://www.w3.org/2000/09/xmldsig#sha256</HashAlgorithm>
+    <HashValue>pZlrOm75NHkBx0F3V4ZX1tGJUxxhvGu+eKANLHevbzo=</HashValue>
+  </IntegrityEntry>
+  <IntegrityEntry>
+    <FilePath>_rels/.rels</FilePath>
+    <HashAlgorithm>http://www.w3.org/2000/09/xmldsig#sha256</HashAlgorithm>
+    <HashValue>tvI1YA6lHdnIcQyXGPU7LCZTVNz8y1R6M1IaKnxd130=</HashValue>
+  </IntegrityEntry>
+</IntegrityList>
+```
+
+File `package/signatures/IntegrityList.xml` is then signed with selected signing certificate and resulting [CMS signature](https://tools.ietf.org/rfc/rfc5652.txt) is stored in DER encoded (binary) form in file `package/signatures/IntegrityList.p7s`.
+
+That's it. Final signed package with following directory structure seems to be fully compatible with already existing NuGet tools and also with nuget.org repository:
+
+    MyLibrary.1.0.0.nupkg
+    ├── lib/
+    │   └── netstandard1.0/
+    │       └── MyLibrary.dll
+    ├── package/
+    │   ├── services/
+    │   │   └── metadata/
+    │   │       └── core-properties/
+    │   │           └── 11faa6a592fc481090e9683c5b96d7bd.psmdcp
+    │   └── signatures/
+    │       ├── IntegrityList.p7s
+    │       └── IntegrityList.xml
+    ├── _rels/
+    │   └── .rels
+    ├── [Content_Types].xml
+    └── MyLibrary.nuspec
+
+## How does signature verification work ?
+
+**TODO - Add description**
 
 ## Can NuSign.exe get merged into NuGet.exe ?
 
