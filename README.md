@@ -3,7 +3,8 @@ NuSign
 
 NuSign is a command line application that digitally signs NuGet packages. It can also verify the signature of any previously signed NuGet package.
 
-**WARNING: NuSign SHOULD NOT be used in production!** It is just a proof of the concept tool which demonstrates that NuGet packages can include embedded signatures and still remain backwards compatible with already existing NuGet tools.
+> **WARNING: NuSign SHOULD NOT be used in production!**  
+> It is just a proof of the concept tool which demonstrates that NuGet packages can include embedded signatures and still remain backwards compatible with already existing NuGet tools.
 
 ## Why do NuGet packages need to be signed?
 
