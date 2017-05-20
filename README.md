@@ -1,5 +1,21 @@
 NuSign
 =============
+**NuGet package signing prototype**
+
+## Table of Contents
+
+* [Overview](#overview)
+* [Why do NuGet packages need to be signed?](#why-do-nuget-packages-need-to-be-signed)
+* [Does NuGet package signature make assembly signature obsolete?](#does-nuget-package-signature-make-assembly-signature-obsolete)
+* [How do I sign a package?](#how-do-i-sign-a-package)
+* [How do I verify package signature?](#how-do-i-verify-package-signature)
+* [How does the signing work?](#how-does-the-signing-work)
+* [How does signature verification work?](#how-does-signature-verification-work)
+* [What is the fastest way to explore NuSign?](#what-is-the-fastest-way-to-explore-nusign)
+* [What is going to happen next?](#what-is-going-to-happen-next)
+* [About](#about)
+
+## Overview
 
 NuSign is a command line application that digitally signs NuGet packages. It can also verify the signature of any previously signed NuGet package.
 
@@ -128,11 +144,15 @@ In the second phase NuSign computes cryptographic hash for every file present in
 
 Package signature is considered to be valid only if CMS signature is valid, all hashes match and there is no missing or additional file present in the package.
 
-## Where can I try it?
+## What is the fastest way to explore NuSign?
 
-**TODO - Describe examples**
+There is a precompiled `NuSign.exe` binary available in [samples directory](samples) along with the following demonstration packages:
 
-## What's going to happen next?
+- [NuSign.TestLibrary.Unsigned](samples/NuSign.TestLibrary.Unsigned.1.0.0.nupkg) - unsigned package [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Unsigned/)
+- [NuSign.TestLibrary.Signed](samples/NuSign.TestLibrary.Signed.1.0.0.nupkg) - signed package [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Signed/)
+- [NuSign.TestLibrary.Tampered](samples/NuSign.TestLibrary.Tampered.1.0.0.nupkg) - signed package with tampered content [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Tampered/)
+
+## What is going to happen next?
 
 NuSign can be improved in many ways:
 
@@ -143,4 +163,8 @@ NuSign can be improved in many ways:
 - use of code-signing certificates could/should be enforced
 - ...
 
-However I'd like to discuss high level design and technical details with NuGet upstream before I take on the bourden of maintaining NuSign as a standalone real world tool. I hope that package signing will become an integral part of NuGet tool.
+However I'd like to discuss high level design and technical details with NuGet upstream before I take on the bourden of maintaining NuSign as a standalone tool. I hope that package signing will become an integral part of NuGet tool. Meanwhile please feel free to [open new issue](https://github.com/jariq/NuSign/issues/new) to report bugs, request new features or just discuss your thoughts.
+
+## About
+
+NuSign has been written by [Jaroslav Imrich](https://www.jimrich.sk) and is avialble under the terms of [MIT license](LICENSE).
