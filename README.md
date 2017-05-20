@@ -148,9 +148,9 @@ Package signature is considered to be valid only if CMS signature is valid, all 
 
 There is a precompiled `NuSign.exe` binary available in [samples directory](samples) along with the following demonstration packages:
 
-- [NuSign.TestLibrary.Unsigned](samples/NuSign.TestLibrary.Unsigned.1.0.0.nupkg) - unsigned package [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Unsigned/)
-- [NuSign.TestLibrary.Signed](samples/NuSign.TestLibrary.Signed.1.0.0.nupkg) - signed package [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Signed/)
-- [NuSign.TestLibrary.Tampered](samples/NuSign.TestLibrary.Tampered.1.0.0.nupkg) - signed package with tampered content [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Tampered/)
+- [NuSign.TestLibrary.Unsigned](samples/NuSign.TestLibrary.Unsigned.1.0.0.nupkg?raw=true) - unsigned package [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Unsigned/)
+- [NuSign.TestLibrary.Signed](samples/NuSign.TestLibrary.Signed.1.0.0.nupkg?raw=true) - signed package [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Signed/)
+- [NuSign.TestLibrary.Tampered](samples/NuSign.TestLibrary.Tampered.1.0.0.nupkg?raw=true) - signed package with tampered content [available also on nuget.org](https://www.nuget.org/packages/NuSign.TestLibrary.Tampered/)
 
 ## What is going to happen next?
 
@@ -159,12 +159,12 @@ NuSign can be improved in many ways:
 - support for other platforms than Windows can be added
 - support for external trust sources can be added
 - support for PKCS#11 compatible key stores can be added
-- support for signature timestamps can be added
+- support for signature time-stamps can be added
 - use of code-signing certificates could/should be enforced
 - ...
 
-However I'd like to discuss high level design and technical details with NuGet upstream before I take on the bourden of maintaining NuSign as a standalone tool. I hope that package signing will become an integral part of NuGet tool. Meanwhile please feel free to [open new issue](https://github.com/jariq/NuSign/issues/new) to report bugs, request new features or just discuss your thoughts.
+However I'd like to discuss high level design and technical details with NuGet upstream before I take on the burden of maintaining NuSign as a standalone tool. I hope that package signing will become an integral part of NuGet tool. Meanwhile please feel free to [open new issue](https://github.com/jariq/NuSign/issues/new) to report bugs, request new features or just discuss your thoughts.
 
 ## About
 
-NuSign has been written by [Jaroslav Imrich](https://www.jimrich.sk) and is avialble under the terms of [MIT license](LICENSE).
+NuSign has been written by [Jaroslav Imrich](https://www.jimrich.sk) and is available under the terms of [MIT license](LICENSE).
