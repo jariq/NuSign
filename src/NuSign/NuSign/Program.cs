@@ -17,7 +17,7 @@ namespace NuSign
             string argSign = null;
             string argVerify = null;
             string argCert = null;
-            bool argCertValidation = false;
+            bool argSkipCertValidation = false;
             List<string> argExtras = null;
 
             var options = new OptionSet {
@@ -29,7 +29,7 @@ namespace NuSign
                 $"  {AssemblyName} -sign Example.nupkg",
                 $"  {AssemblyName} -sign Example.nupkg -cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb",
                 $"  {AssemblyName} -verify Example.nupkg",
-                $"  {AssemblyName} -verify Example.nupkg -performCertValidation",
+                $"  {AssemblyName} -verify Example.nupkg -skipCertValidation",
                 "",
                 "Available options:",
                 "",
@@ -37,7 +37,7 @@ namespace NuSign
                 { "s|sign=", "Sign specified package", s => argSign = s },
                 { "v|verify=", "Verify signature of specified package", v => argVerify = v },
                 { "c|cert=", "Thumbprint of the signing certificate located in CurrentUser\\My certificate store", c => argCert = c },
-                { "p|performCertValidation", "Perform also validation of signing certificate", p => argCertValidation = (p != null) },
+                { "k|skipCertValidation", "Skip validation of signing certificate", k => argSkipCertValidation = (k != null) },
                 ""
             };
             
@@ -85,17 +85,17 @@ namespace NuSign
             {
                 string fileName = Path.GetFileName(argVerify);
 
-                if (argCertValidation)
-                    Console.WriteLine($"Verifying the signature of package \"{fileName}\"...");
-                else
+                if (argSkipCertValidation)
                     Console.WriteLine($"Verifying the signature of package \"{fileName}\" without the validation of signing certificate...");
+                else
+                    Console.WriteLine($"Verifying the signature of package \"{fileName}\"...");
 
                 X509Certificate2 signingCert = null;
 
                 try
                 {
                     using (NuGetPackage package = new NuGetPackage(argVerify))
-                        signingCert = package.Verify(argCertValidation);
+                        signingCert = package.Verify(argSkipCertValidation);
                 }
                 catch (InvalidSignatureException ex)
                 {

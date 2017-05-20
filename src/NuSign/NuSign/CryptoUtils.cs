@@ -27,7 +27,7 @@ namespace NuSign
             return signingCertificate;
         }
 
-        public static SignerInfo VerifyDetachedCmsSignature(byte[] data, byte[] signature, bool performCertValidation)
+        public static SignerInfo VerifyDetachedCmsSignature(byte[] data, byte[] signature, bool skipCertValidation)
         {
             ContentInfo contentInfo = new ContentInfo(data);
             SignedCms signedCms = new SignedCms(contentInfo, true);
@@ -35,7 +35,7 @@ namespace NuSign
 
             try
             {
-                signedCms.CheckSignature(!performCertValidation);
+                signedCms.CheckSignature(skipCertValidation);
             }
             catch (Exception ex)
             {

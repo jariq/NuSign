@@ -28,13 +28,13 @@ Package signature created with [NuSign](https://github.com/jariq/NuSign) protect
 
 Let's assume you have a valid code signing certificate present in your `CurrentUser\My` certificate store and you want to sign `MyLibrary.1.0.0.nupkg`. You can initiate package signing with following command:
 
-    c:\> NuSign.exe --sign MyLibrary.1.0.0.nupkg
+    c:\> NuSign.exe -sign MyLibrary.1.0.0.nupkg
 
 NuSign will display GUI dialog which will let you select certificate you want to use for signing. If your signing certificate is stored in the smartcard then you might also be prompted to enter PIN code.
 
-Alternatively you can perform signing operation in non-interactive/headless mode by specifying thumbprint of signing certificate with `--cert` parameter:
+Alternatively you can perform signing operation in non-interactive/headless mode by specifying thumbprint of signing certificate with `-cert` parameter:
 
-    c:\> NuSign.exe --sign MyLibrary.1.0.0.nupkg --cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb
+    c:\> NuSign.exe -sign MyLibrary.1.0.0.nupkg -cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb
     Signing package "MyLibrary.1.0.0.nupkg"...
     Package "MyLibrary.1.0.0.nupkg" successfully signed.
 
@@ -47,13 +47,9 @@ Alternatively you can perform signing operation in non-interactive/headless mode
 
 ## How do I verify package signature?
 
-Basic validation of package signature can be performed with the following command:
+Validation of package signature can be performed with the following command:
 
-    c:\> NuSign.exe --verify MyLibrary.1.0.0.nupkg
-
-If you want NuSign to perform also validation of signing certificate (whether it's been issued by the trusted CA and whether it hasn't been revoked) you will need to add `--performCertValidation` parameter:
-
-    c:\> NuSign.exe --verify MyLibrary.1.0.0.nupkg --performCertValidation
+    c:\> NuSign.exe -verify MyLibrary.1.0.0.nupkg
     Verifying the signature of package "NuSign.TestLibrary.Signed.1.0.0.nupkg"...
     Signature of "MyLibrary.1.0.0.nupkg" package is VALID.
 
@@ -63,6 +59,10 @@ If you want NuSign to perform also validation of signing certificate (whether it
       Serial number:  78E0593A6F048F998C255F8BC2892D82
       Invalid before: Wed, 11 Jan 2017 07:52:59 GMT
       Invalid after:  Thu, 11 Jan 2018 07:52:59 GMT
+
+If you want NuSign to skip validation of signing certificate (whether it's been issued by the trusted CA and whether it hasn't been revoked) you will need to add `-skipCertValidation` parameter:
+
+    c:\> NuSign.exe -verify MyLibrary.1.0.0.nupkg -skipCertValidation
 
 ## How does the signing work ?
 

@@ -59,7 +59,7 @@ namespace NuSign
             return signingCert;
         }
 
-        public X509Certificate2 Verify(bool performCertValidation)
+        public X509Certificate2 Verify(bool skipCertValidation)
         {
             if (!this.IsSigned)
                 throw new Exception("Package is not signed");
@@ -67,7 +67,7 @@ namespace NuSign
             IntegrityList computedIntegrityList = this.ComputeIntegrityList(out byte[] integrityListContent, out byte[] integrityListSignatureContent);
             IntegrityList embeddedIntegrityList = IntegrityList.FromByteArray(integrityListContent);
 
-            SignerInfo signerInfo = CryptoUtils.VerifyDetachedCmsSignature(integrityListContent, integrityListSignatureContent, performCertValidation);
+            SignerInfo signerInfo = CryptoUtils.VerifyDetachedCmsSignature(integrityListContent, integrityListSignatureContent, skipCertValidation);
 
             if (!computedIntegrityList.SequenceEqual(embeddedIntegrityList))
                 throw new InvalidSignatureException("Package content has been altered");
