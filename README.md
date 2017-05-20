@@ -1,10 +1,11 @@
 NuSign
 =============
-**NuGet package signing prototype**
+
+> **WARNING: NuSign is just proof of the concept which SHOULD NOT be used in production!**  
 
 ## Table of Contents
 
-* [Overview](#overview)
+* [What is NuSign?](#what-is-nusign)
 * [Why do NuGet packages need to be signed?](#why-do-nuget-packages-need-to-be-signed)
 * [Does NuGet package signature make assembly signature obsolete?](#does-nuget-package-signature-make-assembly-signature-obsolete)
 * [How do I sign a package?](#how-do-i-sign-a-package)
@@ -15,11 +16,9 @@ NuSign
 * [What is going to happen next?](#what-is-going-to-happen-next)
 * [About](#about)
 
-## Overview
+## What is NuSign?
 
 NuSign is a command line application that digitally signs NuGet packages. It can also verify the signature of any previously signed NuGet package.
-
-> **WARNING: NuSign is just proof of the concept which SHOULD NOT be used in production!**  
 
 All NuGet package signing related resources I've managed to find are rather old:
 - More than a year old [package signing issue](https://github.com/NuGet/Home/issues/2577) open in NuGet repository
