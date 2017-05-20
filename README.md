@@ -6,13 +6,13 @@ NuSign is a command line application that digitally signs NuGet packages. It can
 > **WARNING: NuSign is just proof of the concept which SHOULD NOT be used in production!**  
 
 All NuGet package signing related resources I've managed to find are rather old:
-- More than a year old [Package signing](https://github.com/NuGet/Home/issues/2577) issue open in NuGet repository
-- More than two years old [Package Signing](http://blog.nuget.org/20150203/package-signing.html) post on blog.nuget.org
-- Deprecated [Package Signing Specification](https://github.com/aspnet/Signing/blob/dev/Spec.md)
+- More than a year old [package signing issue](https://github.com/NuGet/Home/issues/2577) open in NuGet repository
+- More than two years old [package signing post](http://blog.nuget.org/20150203/package-signing.html) post on blog.nuget.org
+- Deprecated [package signing specification](https://github.com/aspnet/Signing/blob/dev/Spec.md) in ASP.NET GitHub repository
 
-I've decided to create NuSign hoping its existence might help revive both discussion and upstream implementation of NuGet package signing.
+I've decided to create NuSign hoping its existence might help revive both upstream discussion and upstream implementation of NuGet package signing.
 
-I've followed simple design goals:
+I've followed these simple design goals:
 - signature needs to be embedded in the package so it does not get lost and can be verified even on packages imported to local repositories
 - signed package needs to be backwards compatible so it can be consumed by the client tools without the support for package signatures
 - signing technology needs to be based on X.509 code-signing certificates just like like assembly signatures are
