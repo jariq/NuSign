@@ -111,7 +111,11 @@ That's it. Final signed package with following directory structure seems to be f
 
 ## How does signature verification work ?
 
-**TODO - Add description**
+In the first phase of package signature verification NuSign validates CMS signature of `IntegrityList.xml` file. It uses Windows certificate store as a source of information about trusted certificate authorities.
+
+In the second phase NuSign computes cryptographic hash for every file present in the package except those in `signatures` folder. Then it compares computed hashes with the hashes stored in `IntegrityList.xml` file.
+
+Package signature is considered to be valid only if CMS signature is valid, all hashes match and there is no missing or additional file present in the package.
 
 ## Can NuSign.exe get merged into NuGet.exe ?
 
