@@ -9,15 +9,17 @@ NuSign is a command line application that digitally signs NuGet packages. It can
 
 NuGet package repository hosted at [nuget.org](https://www.nuget.org) is currently vulnerable to several attacks such as [typosquatting attack](https://github.com/NuGet/Home/issues/2974) because:
 
-- anyone can submit package and it gets accepted automatically without the human review
-- packages can indirectly execute arbitrary code on developer machine (via [MSBuild props and targets](https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package) present in a package) and all end-user machines (via .NET assemblies included in package)
+- anyone can submit package and it gets accepted automatically without any kind of human review
+- packages can indirectly execute arbitrary code
+  -  on developer machine via [MSBuild props and targets](https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package) present in a package
+  - on end-user machine via .NET assemblies included in package
 
 ## Does NuGet package signature make assembly signature obsolete?
 
 No, it does not. Ideally all packages will use both signature types in the future.
 
 Assembly signature created with [SignTool](https://msdn.microsoft.com/en-us/library/windows/desktop/aa387764(v=vs.85).aspx)
-protects integrity and origin/authenticity of assembly (.dll file). It can be verified in the runtime (where NuGet package does not exist anymore) or manually by the end-user.
+protects integrity and origin/authenticity of .NET assembly (.dll file). It can be verified in the runtime (where NuGet package does not exist anymore) or manually by the end-user.
 
 Package signature created with [NuSign](https://github.com/jariq/NuSign) protects integrity and origin/authenticity of all files present in the NuGet package (assemblies, MSBuild props and targets and all the other files). Package level signature can be verified during the development when package is added as a reference.
 
@@ -26,12 +28,6 @@ Package signature created with [NuSign](https://github.com/jariq/NuSign) protect
 Let's assume you have a valid code signing certificate present in your `CurrentUser\My` certificate store and you want to sign `MyLibrary.1.0.0.nupkg`. You can initiate package signing with following command:
 
     c:\> NuSign.exe -sign MyLibrary.1.0.0.nupkg
-
-NuSign will display GUI dialog which will let you select certificate you want to use for signing. If your signing certificate is stored in the smartcard then you might also be prompted to enter PIN code.
-
-Alternatively you can perform signing operation in non-interactive/headless mode by specifying thumbprint of signing certificate with `-cert` parameter:
-
-    c:\> NuSign.exe -sign MyLibrary.1.0.0.nupkg -cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb
     Signing package "MyLibrary.1.0.0.nupkg"...
     Package "MyLibrary.1.0.0.nupkg" successfully signed.
 
@@ -41,6 +37,12 @@ Alternatively you can perform signing operation in non-interactive/headless mode
       Serial number:  78E0593A6F048F998C255F8BC2892D82
       Invalid before: Wed, 11 Jan 2017 07:52:59 GMT
       Invalid after:  Thu, 11 Jan 2018 07:52:59 GMT
+
+NuSign will display GUI dialog which will let you select certificate you want to use for signing. If your signing certificate is stored in the smartcard then you might also be prompted to enter PIN code.
+
+Alternatively you can perform signing operation in non-interactive/headless mode by specifying thumbprint of signing certificate with `-cert` parameter:
+
+    c:\> NuSign.exe -sign MyLibrary.1.0.0.nupkg -cert d5de31ea974f5ea8581d633eeffa8f3ea0d479bb
 
 ## How do I verify package signature?
 
