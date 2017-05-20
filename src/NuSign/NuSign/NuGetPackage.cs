@@ -67,10 +67,11 @@ namespace NuSign
             IntegrityList computedIntegrityList = this.ComputeIntegrityList(out byte[] integrityListContent, out byte[] integrityListSignatureContent);
             IntegrityList embeddedIntegrityList = IntegrityList.FromByteArray(integrityListContent);
 
+            SignerInfo signerInfo = CryptoUtils.VerifyDetachedCmsSignature(integrityListContent, integrityListSignatureContent, performCertValidation);
+
             if (!computedIntegrityList.SequenceEqual(embeddedIntegrityList))
                 throw new InvalidSignatureException("Package content has been altered");
-
-            SignerInfo signerInfo = CryptoUtils.VerifyDetachedCmsSignature(integrityListContent, integrityListSignatureContent, performCertValidation);
+            
             return signerInfo.Certificate;
         }
 
