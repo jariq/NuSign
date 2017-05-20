@@ -3,8 +3,19 @@ NuSign
 
 NuSign is a command line application that digitally signs NuGet packages. It can also verify the signature of any previously signed NuGet package.
 
-> **WARNING: NuSign SHOULD NOT be used in production!**  
-> It is just a proof of the concept tool which demonstrates that NuGet packages can include embedded signatures and still remain backwards compatible with already existing NuGet tools.
+> **WARNING: NuSign is just proof of the concept which SHOULD NOT be used in production!**  
+
+All NuGet package signing related resources I've managed to find are rather old:
+- More than a year old [Package signing](https://github.com/NuGet/Home/issues/2577) issue open in NuGet repository
+- More than two years old [Package Signing](http://blog.nuget.org/20150203/package-signing.html) post on blog.nuget.org
+- Deprecated [Package Signing Specification](https://github.com/aspnet/Signing/blob/dev/Spec.md)
+
+I've decided to create NuSign hoping its existence might help revive both discussion and upstream implementation of NuGet package signing.
+
+I've followed simple design goals:
+- signature needs to be embedded in the package so it does not get lost and can be verified even on packages imported to local repositories
+- signed package needs to be backwards compatible so it can be consumed by the client tools without the support for package signatures
+- signing technology needs to be based on X.509 code-signing certificates just like like assembly signatures are
 
 ## Why do NuGet packages need to be signed?
 
@@ -117,6 +128,19 @@ In the second phase NuSign computes cryptographic hash for every file present in
 
 Package signature is considered to be valid only if CMS signature is valid, all hashes match and there is no missing or additional file present in the package.
 
-## Can NuSign.exe get merged into NuGet.exe?
+## Where can I try it?
 
-**TODO - Add checklist**
+**TODO - Describe examples**
+
+## What's going to happen next?
+
+NuSign can be improved in many ways:
+
+- support for other platforms than Windows can be added
+- support for external trust sources can be added
+- support for PKCS#11 compatible key stores can be added
+- support for signature timestamps can be added
+- use of code-signing certificates could/should be enforced
+- ...
+
+However I'd like to discuss high level design and technical details with NuGet upstream before I take on the bourden of maintaining NuSign as a standalone real world tool. I hope that package signing will become an integral part of NuGet tool.
