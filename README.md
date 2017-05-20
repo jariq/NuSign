@@ -1,21 +1,18 @@
 NuSign
 =============
-**NuGet package signing prototype**
-
-## What is NuSign ?
 
 NuSign is a command line application that digitally signs NuGet packages. It can also verify the signature of any previously signed NuGet package.
 
 **WARNING: NuSign SHOULD NOT be used in production!** It is just a proof of the concept tool which demonstrates that NuGet packages can include embedded signatures and still remain backwards compatible with already existing NuGet tools.
 
-## Why do NuGet packages need to be signed ?
+## Why do NuGet packages need to be signed?
 
 NuGet package repository hosted at [nuget.org](https://www.nuget.org) is currently vulnerable to several attacks such as [typosquatting attack](https://github.com/NuGet/Home/issues/2974) because:
 
 - anyone can submit package and it gets accepted automatically without the human review
 - packages can indirectly execute arbitrary code on developer machine (via [MSBuild props and targets](https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package) present in a package) and all end-user machines (via .NET assemblies included in package)
 
-## Does NuGet package signature make assembly signature obsolete ?
+## Does NuGet package signature make assembly signature obsolete?
 
 No, it does not. Ideally all packages will use both signature types in the future.
 
@@ -24,7 +21,7 @@ protects integrity and origin/authenticity of assembly (.dll file). It can be ve
 
 Package signature created with [NuSign](https://github.com/jariq/NuSign) protects integrity and origin/authenticity of all files present in the NuGet package (assemblies, MSBuild props and targets and all the other files). Package level signature can be verified during the development when package is added as a reference.
 
-## How do I sign a package ?
+## How do I sign a package?
 
 Let's assume you have a valid code signing certificate present in your `CurrentUser\My` certificate store and you want to sign `MyLibrary.1.0.0.nupkg`. You can initiate package signing with following command:
 
@@ -64,7 +61,7 @@ If you want NuSign to skip validation of signing certificate (whether it's been 
 
     c:\> NuSign.exe -verify MyLibrary.1.0.0.nupkg -skipCertValidation
 
-## How does the signing work ?
+## How does the signing work?
 
 NuGet package (`.nupkg` file) is just an ordinary ZIP archive (`.zip` file) with the following directory structure:
 
@@ -109,7 +106,7 @@ That's it. Final signed package with following directory structure seems to be f
 
 ![Structure of signed NuGet package](images/signed_package.png?raw=true)
 
-## How does signature verification work ?
+## How does signature verification work?
 
 In the first phase of package signature verification NuSign validates CMS signature of `IntegrityList.xml` file. It uses Windows certificate store as a source of information about trusted certificate authorities.
 
@@ -117,6 +114,6 @@ In the second phase NuSign computes cryptographic hash for every file present in
 
 Package signature is considered to be valid only if CMS signature is valid, all hashes match and there is no missing or additional file present in the package.
 
-## Can NuSign.exe get merged into NuGet.exe ?
+## Can NuSign.exe get merged into NuGet.exe?
 
 **TODO - Add checklist**
